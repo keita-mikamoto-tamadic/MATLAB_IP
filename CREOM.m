@@ -94,7 +94,7 @@ for i = 1:N
     end
     ddLq(i) = temp;
 
-    eq(i) = ddLq(i) - diff(L, q(i)) + diff(D(i), dq(i)) == torq(i) - dissipation(i);
+    eq(i) = ddLq(i) - diff(L, q(i)) + diff(D(i), dq(i)) == torq(i) + dissipation(i);
 end
 eq_view =eq;
 
@@ -176,14 +176,20 @@ A = subs(A);
 B = subs(B);
 
 % ============================
-% 最適レギュレータゲイン算出
+% 最適サーボゲイン算出
 % ============================
 % sym型からdouble型に変換
+% Aを拡大系へ拡張
 A = double(A);
+A = vertcat(A, -C);
+A = horzcat(A, zeros(5,1));
+% Bを拡大系へ拡張
 B = double(B);
-Q = double(Q_lqr);
+B = vertcat(B, 0);
+
+Q = double(Q_svr);
 R = double(R_lqr);
 
 [K, S, P] = lqr(A, B, Q, R);
-K_lqr = double(K');
-
+Ig = K(5)
+K(5) = []
